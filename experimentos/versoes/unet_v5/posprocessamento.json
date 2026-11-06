@@ -1,0 +1,9 @@
+{
+  "limiar_semente": 0.5,
+  "crescimento": 12,
+  "area_minima": 300,
+  "confianca_minima": 0.85,
+  "criterio": 0.7940859862523466,
+  "calibrado_em": "valida\u00e7\u00e3o",
+  "tta": false
+}
