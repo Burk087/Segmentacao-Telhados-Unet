@@ -108,6 +108,21 @@ em nenhuma etapa do desenvolvimento:
 Nas imagens limpas, a precisão por telhado foi de 86,1% e o recall foi de 79,2%. Com
 perturbações, o F1 caiu apenas 1,4 ponto percentual em média.
 
+Para medir o efeito das perturbações no treino, a mesma rede foi treinada também sem elas
+(modelo de referência, mesma configuração e mesma semente 42 da V3) e avaliada no mesmo teste:
+
+<div align="center">
+
+| F1 por telhado (teste, semente 42) | Imagens limpas | Média das 20 perturbações | Intensidade máxima | Ruído gaussiano |
+|:---:|:---:|:---:|:---:|:---:|
+| V3 (com perturbações no treino) | 0,832 | 0,819 | 0,803 | 0,805 |
+| Referência (sem perturbações no treino) | 0,819 | 0,692 | 0,607 | 0,540 |
+
+</div>
+
+Sem as perturbações no treino, a queda nas imagens perturbadas passa de 1,3 para 12,7 pontos
+percentuais, enquanto nas imagens limpas os dois modelos ficam praticamente iguais.
+
 <div align="center">
 
 | Dados | Treino | Validação | Teste |
@@ -388,6 +403,18 @@ python treinar_unet.py --semente 2026 --nome unet_v3_s2026
 python gerar_figuras_comparacao.py
 ```
 
+Para treinar o modelo de referência sem perturbações, trocar `"p_perturbacao": 0.7` por
+`"p_perturbacao": 0.0` no `CONFIG` do `treinar_unet.py` e rodar:
+
+```
+python treinar_unet.py --nome unet_sem_perturbacao
+python calibrar_posprocessamento.py --experimento unet_sem_perturbacao
+python avaliar_unet.py --experimento unet_sem_perturbacao
+python avaliar_unet.py --experimento unet_sem_perturbacao --teste-final
+```
+
+Depois, voltar o `CONFIG` para `"p_perturbacao": 0.7`.
+
 Se o treino for interrompido (por exemplo, por falta de energia), ele pode continuar de onde parou:
 
 ```
@@ -419,6 +446,7 @@ segmentacao-telhados-unet/
     ├── unet_v3_s7/                mesma configuração, semente 7
     ├── unet_v3_s2026/             mesma configuração, semente 2026
     ├── unet_v5/                   segunda melhor versão
+    ├── unet_sem_perturbacao/      modelo de referência, treinado sem perturbações
     ├── conjunto_v3/               pós-processamento do conjunto das três redes v3
     └── versoes/                   configuração e histórico de cada versão (V1 a V6)
 ```
@@ -444,12 +472,14 @@ valores do `CONFIG`, no começo do `treinar_unet.py`. A configuração completa 
 | V4 | 5 | 0,25 | sim (w0 = 5) | 0,7 | 0,2 a 1,0 | 0 |
 | V5 | 5 | 0,25 | sim (w0 = 10) | 0,7 | 0,2 a 1,0 | 0 |
 | V6 | 4 | 0,25 | sim (w0 = 5) | 0,7 | 0,2 a 1,0 | 0,5 |
+| Referência | 4 | 0,25 | sim (w0 = 5) | 0 | — | 0 |
 
 </div>
 
 A V3 foi escolhida como versão final: a V5, com um nível a mais e quase três vezes mais
 parâmetros (20,6 milhões contra 7,8 milhões), não teve desempenho melhor na identificação dos
-telhados com perturbações.
+telhados com perturbações. A linha "Referência" não é uma versão do desenvolvimento: é a V3
+treinada sem perturbações, usada só para medir o efeito delas (ver [Resultados](#resultados)).
 
 ---
 
